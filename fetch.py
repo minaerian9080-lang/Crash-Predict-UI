@@ -1,46 +1,44 @@
-# fetch.py
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
+from webdriver_manager.firefox import GeckoDriverManager
 
 def fetch_and_display_html(url):
-    browser = None  # Define the variable before try to avoid UnboundLocalError
+    browser = None  # define browser before try
     try:
         options = Options()
-        options.headless = True  # Run browser in headless mode
-        service = Service(executable_path="./geckodriver")  # Change path if geckodriver is elsewhere
+        options.add_argument("--headless")  # run headless
+        service = Service(GeckoDriverManager().install())
         browser = webdriver.Firefox(service=service, options=options)
-        
+
         browser.get(url)
         html_source = browser.page_source
+
+        # You can process html_source here if needed
         return html_source
 
     except Exception as e:
-        print("Error fetching HTML:", e)
+        print(f"Error fetching URL: {e}")
         return None
 
     finally:
         if browser is not None:
             browser.quit()
 
-
 def main():
-    url = "https://duelbets.com/crash"  # Change to the actual game URL
+    url = "https://example.com"  # replace with your game URL
     html_source = fetch_and_display_html(url)
-    
-    if html_source:
-        # Here you can parse the HTML if needed
-        # Example: extracting game data from HTML
-        game_data = {
+
+    if html_source is None:
+        return {
             "payout": 0,
             "ticket": 0,
-            "startedAt": "",
-            "numberOfBets": 0,
-            "serverSeed": "",
-            "id": "",
-            "endTime": ""
+            "numberOfBets": 0
         }
-        # Replace this example with actual data extraction logic
-        return game_data
-    else:
-        return None
+
+    # Dummy data parsing example
+    return {
+        "payout": 100,        # replace with parsed value
+        "ticket": 150,        # replace with parsed value
+        "numberOfBets": 10    # replace with parsed value
+    }
