@@ -1,44 +1,115 @@
+# from selenium import webdriver
+# from selenium.webdriver.firefox.options import Options
+# from bs4 import BeautifulSoup
+# import json
+# import pandas as pd
+
+# def main():
+#     url = "https://ws.duelbits.com/games/crash/history"
+#     html_source = fetch_and_display_html(url)
+
+#     json_data = extract_json_from_html(html_source)
+    
+#     if json_data:
+#         process_and_save_to_csv(json_data, "data.csv")
+
+   
+#     return json_data[0]
+
+# def fetch_and_display_html(url):
+#     try:
+#         options = Options()
+#         options.headless = True
+#         browser = webdriver.Firefox(options=options)
+#         browser.get(url)
+
+#         browser.implicitly_wait(10)
+#         html_source = browser.page_source
+
+#         return html_source
+
+#     except Exception as e:
+#         print(f"Error: {str(e)}")
+#     finally:
+#         browser.quit()
+
+# def extract_json_from_html(html_source):
+#     soup = BeautifulSoup(html_source, 'html.parser')
+#     json_div = soup.find('div', {'id': 'json'})
+#     if json_div:
+#         json_data = json.loads(json_div.text)
+#         return json_data.get("history", [])
+#     else:
+#         print("Error: Unable to find div with id='json'")
+#         return []
+
+# def process_and_save_to_csv(json_data, filename):
+#     if json_data:
+#         df = pd.DataFrame(json_data)
+#         df.to_csv(filename, index=False)
+        
+#         print(f"Data saved to {filename}")
+#     else:
+#         print("Error: No JSON data to process and save")
+
+# if __name__ == "__main__":
+#     x = main()
+#     print(x)
+
+
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
+from bs4 import BeautifulSoup
+استيراد json
+استورد مكتبة Pandas باسم pd
+
+def  main ( ) :
+    url = "https://ws.duelbits.com/games/crash/history"
+    html_source = fetch_and_display_html ( url )
+
+    json_data = extract_json_from_html ( html_source )
+    
+    if json_data:
+        process_and_save_to_csv(json_data, "data.csv")
+
+    return json_data[0]
 
 def fetch_and_display_html(url):
-    browser = None  # define browser before try
     try:
         options = Options()
-        options.add_argument("--headless")  # run headless
-        service = Service(GeckoDriverManager().install())
+        options.headless = True
+        service = Service(GeckoDriverManager().install())  # Use GeckoDriverManager to get the path dynamically
         browser = webdriver.Firefox(service=service, options=options)
-
         browser.get(url)
+
+        browser.implicitly_wait(10)
         html_source = browser.page_source
 
-        # You can process html_source here if needed
         return html_source
 
     except Exception as e:
-        print(f"Error fetching URL: {e}")
-        return None
-
+        print(f"Error: {str(e)}")
     finally:
-        if browser is not None:
+        if browser:
             browser.quit()
 
-def main():
-    url = "https://example.com"  # replace with your game URL
-    html_source = fetch_and_display_html(url)
+def extract_json_from_html(html_source):
+    soup = BeautifulSoup(html_source, 'html.parser')
+    json_div = soup.find('div', {'id': 'json'})
+    if json_div:
+        json_data = json.loads(json_div.text)
+        return json_data.get("history", [])
+    else:
+        print("Error: Unable to find div with id='json'")
+        return []
 
-    if html_source is None:
-        return {
-            "payout": 0,
-            "ticket": 0,
-            "numberOfBets": 0
-        }
-
-    # Dummy data parsing example
-    return {
-        "payout": 100,        # replace with parsed value
-        "ticket": 150,        # replace with parsed value
-        "numberOfBets": 10    # replace with parsed value
-    }
+def process_and_save_to_csv(json_data, filename):
+    if json_data:
+        df = pd.DataFrame(json_data)
+        df.to_csv(filename, index=False)
+        
+        print(f"Data saved to {filename}")
+    else:
+        print("Error: No JSON data to process and save")
