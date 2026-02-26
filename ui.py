@@ -47,9 +47,4 @@ selected_model = st.sidebar.selectbox("Choose Model", ["Crash CNN", "Crash RNN"]
 # Button: predict next game
 if st.button("Predict Next Game"):
     load_game_data()
-    if selected_model == "Crash CNN":
-        get_model_prediction_crashCNN()
-    else:
-        get_model_prediction_crashRNN()
-else:
-    load_game_data()
+    
