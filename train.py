@@ -2,32 +2,33 @@ def predict_next_event():
 
     df = pd.read_csv('data.csv')
 
-    features = df[['endTime', 'ticket', 'startedAt', 'numberOfBets', 'payout', 'hash_result']]
-    target = df['ticket']
+    if len(df) < 20:
+        return {
+            "average": 0,
+            "prob_2x": 0,
+            "risk": "Not enough data",
+            "suggested_exit": 0
+        }
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        features, target, test_size=0.2
-    )
+    last_20 = df['ticket'].iloc[-20:] / 100
 
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
+    average = round(last_20.mean(), 3)
+    prob_2x = round((last_20 >= 2).mean() * 100, 2)
 
-    model = keras.Sequential([
-        layers.Dense(64, activation='relu', input_shape=(X_train_scaled.shape[1],)),
-        layers.Dense(32, activation='relu'),
-        layers.Dense(1)
-    ])
+    # Risk logic
+    if prob_2x > 60:
+        risk = "Low"
+        suggested_exit = 1.8
+    elif prob_2x > 40:
+        risk = "Medium"
+        suggested_exit = 1.5
+    else:
+        risk = "High"
+        suggested_exit = 1.2
 
-    model.compile(optimizer='adam', loss='mean_squared_error')
-
-    model.fit(X_train_scaled, y_train, epochs=30, batch_size=64, verbose=0)
-
-    # 🔥 Predict using latest game
-    latest_row = features.iloc[-1:].values
-    latest_row_scaled = scaler.transform(latest_row)
-
-    predicted_difference = model.predict(latest_row_scaled, verbose=0)[0][0]
-
-    predicted_ticket = df['hash_result'].iloc[-1] + predicted_difference
-
-    return float(predicted_ticket / 100)
+    return {
+        "average": average,
+        "prob_2x": prob_2x,
+        "risk": risk,
+        "suggested_exit": suggested_exit
+    }
