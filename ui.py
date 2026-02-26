@@ -1,46 +1,35 @@
 import streamlit as st
-import fetch
 import train
+import train_rnn
+import pandas as pd
 
-st.set_page_config(page_title="Crash Analysis System", layout="centered")
+st.title("Crash Predictor - RNN Simulation")
 
-st.title("Crash Game Analysis System")
+# اختيار النموذج
+selected_model = st.sidebar.selectbox("Choose Model", ["Average Model", "RNN Model"])
 
-# -------------------------------
-# Display Last Game Data
-# -------------------------------
+if st.button("Predict Next Game"):
 
-def load_game_data():
-    data = fetch.main()
+    # التنبؤ حسب النموذج
+    if selected_model == "Average Model":
+        predicted_multiplier = train.predict_next_event()
+    else:
+        predicted_multiplier = train_rnn.predict_rnn()
 
-    st.subheader("Last Game Data")
+    st.subheader("Predicted Multiplier of Next Game")
+    st.metric("Prediction", predicted_multiplier)
 
-    st.metric("Total Payout", data.get("payout", "N/A"))
-    st.metric("Game Multiplier", data.get("ticket", "N/A"))
-    st.metric("Number of Bets", data.get("numberOfBets", "N/A"))
-
-    st.text(f"Game ID: {data.get('game_id', 'N/A')}")
-    st.text(f"Server Seed: {data.get('serverSeed', 'N/A')}")
-    st.text(f"Started At: {data.get('startedAt', 'N/A')}")
-    st.text(f"End Time: {data.get('endTime', 'N/A')}")
-
-# -------------------------------
-# Analysis Button
-# -------------------------------
-
-if st.button("Analyze Next Game"):
-
-    load_game_data()
-
-    result = train.predict_next_event()
-
-    st.subheader("Crash Analysis (Last 20 Games)")
-
-    st.metric("Average Multiplier", result["average"])
-    st.metric("Probability >= 2x", f'{result["prob_2x"]}%')
-    st.metric("Suggested Safe Exit", result["suggested_exit"])
-
-    st.write(f"### Risk Level: {result['risk']}")
-
-else:
-    load_game_data()
+    # عرض آخر لعبة
+    try:
+        df = pd.read_csv('data.csv')
+        last_game = df.iloc[-1]
+        st.subheader("Last Game Data")
+        st.metric("Total Payout", last_game.get("payout", "N/A"))
+        st.metric("Game Multiplier", last_game.get("ticket", "N/A"))
+        st.metric("Number of Bets", last_game.get("numberOfBets", "N/A"))
+        st.text(f"Game ID: {last_game.get('id', 'N/A')}")
+        st.text(f"Server Seed: {last_game.get('serverSeed', 'N/A')}")
+        st.text(f"Started At: {last_game.get('startedAt', 'N/A')}")
+        st.text(f"End Time: {last_game.get('endTime', 'N/A')}")
+    except Exception as e:
+        st.write("No previous game data found.")
